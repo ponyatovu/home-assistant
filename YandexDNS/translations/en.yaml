@@ -3,12 +3,12 @@ configuration:
   domains:
     name: Domains
     description: >-
-      A list of DuckDNS subdomains registered under your account. An acceptable
-      naming convention is `my-domain.duckdns.org`.
+      A list of YandexDNS subdomains registered under your account. An acceptable
+      naming convention is `my-domain.YandexDNS.org`.
   token:
     name: Token
     description: >-
-      The DuckDNS authentication token found at the top of the DuckDNS account
+      The YandexDNS authentication token found at the top of the YandexDNS account
       landing page. The token is required to make any changes to the subdomains
       registered to your account.
   aliases:
@@ -20,17 +20,17 @@ configuration:
   seconds:
     name: Seconds
     description: >-
-      The number of seconds to wait before updating DuckDNS subdomains and
+      The number of seconds to wait before updating YandexDNS subdomains and
       renewing Let's Encrypt certificates.
   ipv4:
     name: IPv4
     description: >-
-      By default, DuckDNS will auto detect your IPv4 address and use that.
+      By default, YandexDNS will auto detect your IPv4 address and use that.
       This option allows you to override the auto-detection and specify an
       IPv4 address manually. The value 'none' disables IPv4 updates.
   ipv6:
     name: IPv6
     description: >-
-      DuckDNS currently cannot auto-detect your IPv6 address. This option
+      YandexDNS currently cannot auto-detect your IPv6 address. This option
       allows to specify either 'default' or an interface name to use an IPv6
       address of the host, alternatively you can input an address manually.
