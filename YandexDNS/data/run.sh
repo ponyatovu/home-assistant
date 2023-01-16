@@ -3,104 +3,110 @@
 CERT_DIR=/data/letsencrypt
 WORK_DIR=/data/workdir
 
+DEBUGING=1
+
 # Let's encrypt
 LE_UPDATE="0"
 
-# DuckDNS
-if bashio::config.has_value "ipv4"; then IPV4=$(bashio::config 'ipv4'); else IPV4=""; fi
-if bashio::config.has_value "ipv6"; then IPV6=$(bashio::config 'ipv6'); else IPV6=""; fi
-TOKEN=$(bashio::config 'token')
-DOMAINS=$(bashio::config 'domains | join(",")')
-WAIT_TIME=$(bashio::config 'seconds')
-ALGO=$(bashio::config 'lets_encrypt.algo')
+TOKENAPI='6TRQZ65JXMROEY273ZAWGYUDPEZT56ZYNIYDTBJD3VHIL6SL3TYA'
+DOMAIN='shome.kz'
+SUBDOMAIN='ha01'
+WAIT_TIME=60
 
-# Function that performs a renew
-function le_renew() {
-    local domain_args=()
-    local domains=''
-    local aliases=''
+SUBDOMAINID="$(curl -H "PddToken: ${TOKENAPI}" -s "https://pddimp.yandex.ru/api2/admin/dns/list?domain=${DOMAIN}1" | jq -r "select(has(\"records\")) | .records[] | select(.subdomain==\"$SUBDOMAIN\") | .record_id")";
+LAST_MY_IP="$(curl -H "PddToken: ${TOKENAPI}" -s "https://pddimp.yandex.ru/api2/admin/dns/list?domain=${DOMAIN}" | jq -r "select(has(\"records\")) | .records[] | select(.subdomain==\"$SUBDOMAIN\") | .content")";
+MY_IP=''
+RESULT_CHANGE_STATE=''
 
-    domains=$(bashio::config 'domains')
 
-    # Prepare domain for Let's Encrypt
-    for domain in ${domains}; do
-        for alias in $(jq --raw-output --exit-status "[.aliases[]|{(.alias):.domain}]|add.\"${domain}\" | select(. != null)" /data/options.json) ; do
-            aliases="${aliases} ${alias}"
-        done
-    done
+if [ $DEBUGING != 1 ] 
+then
+	TOKENAPI=$(bashio::config 'token')
+	DOMAIN=$(bashio::config 'domain')
+	SUBDOMAIN=$(bashio::config 'subdomain')
+	WAIT_TIME=$(bashio::config 'seconds') + 0
+fi
 
-    aliases="$(echo "${aliases}" | tr ' ' '\n' | sort | uniq)"
 
-    bashio::log.info "Renew certificate for domains: $(echo -n "${domains}") and aliases: $(echo -n "${aliases}")"
-
-    for domain in $(echo "${domains}" "${aliases}" | tr ' ' '\n' | sort | uniq); do
-        domain_args+=("--domain" "${domain}")
-    done
-
-    dehydrated --cron --algo "${ALGO}" --hook ./hooks.sh --challenge dns-01 "${domain_args[@]}" --out "${CERT_DIR}" --config "${WORK_DIR}/config" || true
-    LE_UPDATE="$(date +%s)"
+function GetLastMyIP() {
+	LAST_MY_IP="$(curl -H "PddToken: ${TOKENAPI}" -s "https://pddimp.yandex.ru/api2/admin/dns/list?domain=${DOMAIN}" | jq -r "select(has(\"records\")) | .records[] | select(.subdomain==\"$SUBDOMAIN\") | .content")";
 }
 
-# Register/generate certificate if terms accepted
-if bashio::config.true 'lets_encrypt.accept_terms'; then
-    # Init folder structs
-    mkdir -p "${CERT_DIR}"
-    mkdir -p "${WORK_DIR}"
+function GetMyIp() {
+	MY_IP="$(curl -s "https://api.myip.com/" | jq -r ".ip")";
+	
+	if [ $DEBUGING != 1 ] 
+	then 
+		bashio::log.debug "Recive ip: ${MY_IP}"
+	fi
+}
 
-    # Clean up possible stale lock file
-    if [ -e "${WORK_DIR}/lock" ]; then
-        rm -f "${WORK_DIR}/lock"
-        bashio::log.warning "Reset dehydrated lock file"
-    fi
+function ChangeMyIP() {
+	RESULT_CHANGE_STATE="$(curl -H "PddToken: ${TOKENAPI}" -d "domain=${DOMAIN}&record_id=${SUBDOMAINID}&subdomain=${SUBDOMAIN}&ttl=60&content=$1" -s  "https://pddimp.yandex.ru/api2/admin/dns/edit" | jq -r ".success")";
+	
+	if [ $DEBUGING != 1 ] 
+	then 
+		bashio::log.debug "Change ip state: ${RESULT_CHANGE_STATE}"
+	fi
+}
 
-    # Generate new certs
-    if [ ! -d "${CERT_DIR}/live" ]; then
-        # Create empty dehydrated config file so that this dir will be used for storage
-        touch "${WORK_DIR}/config"
+function CheckMyIP() {
+	GetLastMyIP
+	GetMyIp
 
-        dehydrated --register --accept-terms --config "${WORK_DIR}/config"
-    fi
-fi
+
+	if [ "$MY_IP" != "$LAST_MY_IP" ] && [ -n "$MY_IP" ] && [ -n "$LAST_MY_IP" ];
+	then
+		if [ $DEBUGING != 1 ] 
+		then
+			bashio::log.info "My ip chenged: ${MY_IP}"
+		else
+			echo "My ip chenged: ${MY_IP}"
+		fi
+		
+		ChangeMyIP $MY_IP
+		
+		if [ "$RESULT_CHANGE_STATE" = "ok" ]
+		then
+			LAST_MY_IP = $MY_IP;
+			
+			if [ "$DEBUGING" != "1" ] 
+			then
+				bashio::log.info "Change ip is ok"
+			else
+				echo 'Change ip is ok'
+			fi
+		else
+			if [ "$DEBUGING" != "1" ] 
+			then
+				bashio::log.warning "Error update record"
+			else
+				echo 'Error update record'
+			fi
+		fi
+		
+		LE_UPDATE="$(date +%s)"
+	fi
+}
 
 # Run duckdns
 while true; do
+	if [ -z "$SUBDOMAINID" ]
+	then
+		SUBDOMAINID="$(curl -H "PddToken: ${TOKENAPI}" -s "https://pddimp.yandex.ru/api2/admin/dns/list?domain=${DOMAIN}" | jq -r "select(has(\"records\")) | .records[] | select(.subdomain==\"$SUBDOMAIN\") | .record_id")";
+		
+		continue
+	fi
 
-    [[ ${IPV4} != *:/* ]] && ipv4=${IPV4} || ipv4=$(curl -s -m 10 "${IPV4}")
-    [[ ${IPV6} != *:/* ]] && ipv6=${IPV6} || ipv6=$(curl -s -m 10 "${IPV6}")
+	now="$(date +%s)"
 
-    # Get IPv6-address from host interface
-    if [[ -n "$IPV6" && ${ipv6} != *:* ]]; then
-        ipv6=
-        bashio::cache.flush_all
-        for addr in $(bashio::network.ipv6_address "$IPV6"); do
-	    # Skip non-global addresses
-	    if [[ ${addr} != fe80:* && ${addr} != fc* && ${addr} != fd* ]]; then
-              ipv6=${addr%/*}
-              break
-            fi
-        done
-    fi
+	if [ $((now - LE_UPDATE)) > "$WAIT_TIME" ]
+	then
 
-    if [[ ${ipv6} == *:* ]]; then
-        if answer="$(curl -s "https://www.duckdns.org/update?domains=${DOMAINS}&token=${TOKEN}&ipv6=${ipv6}&verbose=true")" && [ "${answer}" != 'KO' ]; then
-            bashio::log.info "${answer}"
-        else
-            bashio::log.warning "${answer}"
-        fi
-    fi
+			CheckMyIP
 
-    if [[ -z ${ipv4} || ${ipv4} == *.* ]]; then
-        if answer="$(curl -s "https://www.duckdns.org/update?domains=${DOMAINS}&token=${TOKEN}&ip=${ipv4}&verbose=true")" && [ "${answer}" != 'KO' ]; then
-            bashio::log.info "${answer}"
-        else
-            bashio::log.warning "${answer}"
-        fi
-    fi
-
-    now="$(date +%s)"
-    if bashio::config.true 'lets_encrypt.accept_terms' && [ $((now - LE_UPDATE)) -ge 43200 ]; then
-        le_renew
-    fi
-
-    sleep "${WAIT_TIME}"
+			LE_UPDATE="$(date +%s)"
+	fi
+	
+	sleep '10';
 done
