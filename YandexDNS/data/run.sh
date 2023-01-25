@@ -3,7 +3,7 @@
 CERT_DIR=/data/letsencrypt
 WORK_DIR=/data/workdir
 
-DEBUGING=1
+DEBUGING=0
 
 # Let's encrypt
 LE_UPDATE="0"
@@ -27,6 +27,14 @@ then
 	WAIT_TIME=$(bashio::config 'seconds') + 0
 fi
 
+if [ $DEBUGING != 1 ] 
+then 
+	bashio::log.debug "Starting"
+	bashio::log.info  "TOKENAPI: ${TOKENAPI}"
+	bashio::log.info  "DOMAIN: ${DOMAIN}"
+	bashio::log.info  "SUBDOMAIN: ${SUBDOMAIN}"
+	bashio::log.info  "WAIT_TIME: ${WAIT_TIME}"
+fi
 
 function GetLastMyIP() {
 	LAST_MY_IP="$(curl -H "PddToken: ${TOKENAPI}" -s "https://pddimp.yandex.ru/api2/admin/dns/list?domain=${DOMAIN}" | jq -r "select(has(\"records\")) | .records[] | select(.subdomain==\"$SUBDOMAIN\") | .content")";
