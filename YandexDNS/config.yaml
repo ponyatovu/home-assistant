@@ -15,8 +15,6 @@ arch:
 hassio_api: true
 init: false
 image: homeassistant/{arch}-addon-yandexdns
-map:
-  - ssl:rw
 options:
   domains:
     - null
