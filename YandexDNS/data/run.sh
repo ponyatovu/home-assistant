@@ -36,6 +36,7 @@ then
 	bashio::log.info  "DOMAIN: ${DOMAIN}"
 	bashio::log.info  "SUBDOMAIN: ${SUBDOMAIN}"
 	bashio::log.info  "WAIT_TIME: ${WAIT_TIME}"
+	bashio::log.info  "VIEWPING: ${VIEWPING}"
 fi
 
 function GetLastMyIP() {
@@ -117,7 +118,7 @@ while true; do
 
 			LE_UPDATE="$(date +%s)"
 			
-			if [ VIEWPING ] 
+			if [ VIEWPING != 0 ] 
 			then
 				if [ "$DEBUGING" != "1" ] 
 				then
