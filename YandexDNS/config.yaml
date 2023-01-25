@@ -5,6 +5,7 @@ name: Yandex DNS
 description: >-
   Yandex DNS
 url: https://github.com/ponyatovu/home-assistant
+advanced: true
 arch:
   - armhf
   - armv7
