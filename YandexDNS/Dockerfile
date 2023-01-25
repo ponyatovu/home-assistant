@@ -2,7 +2,7 @@ ARG BUILD_FROM
 FROM $BUILD_FROM
 
 
-WORKDIR /data
+WORKDIR data
 
 # Copy data for add-on
 COPY run.sh /
