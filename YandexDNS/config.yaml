@@ -1,5 +1,5 @@
 ---
-version: 1.0.1
+version: 1.0.2
 slug: yandexdns
 name: Yandex DNS
 description: >-
@@ -19,9 +19,11 @@ options:
   subdomain: 'ha01'
   token: '6TRQZ65JXMROEY273ZAWGYUDPEZT56ZYNIYDTBJD3VHIL6SL3TYA'
   seconds: 300
+  debug: true
 schema:
   domain: str
   subdomain: str
   token: str
   seconds: int
+  debug: bool
 startup: services
