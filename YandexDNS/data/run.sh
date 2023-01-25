@@ -118,7 +118,7 @@ while true; do
 
 			LE_UPDATE="$(date +%s)"
 			
-			if [ VIEWPING != 0 ] 
+			if [ $VIEWPING != 0 ] 
 			then
 				if [ "$DEBUGING" != "1" ] 
 				then
@@ -129,5 +129,5 @@ while true; do
 			fi
 	fi
 	
-	sleep '10';
+	sleep "$WAIT_TIME";
 done
