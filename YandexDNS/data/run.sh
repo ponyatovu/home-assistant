@@ -76,7 +76,7 @@ function CheckMyIP() {
 		
 		if [ "$RESULT_CHANGE_STATE" = "ok" ]
 		then
-			LAST_MY_IP = $MY_IP;
+			LAST_MY_IP=$MY_IP;
 			
 			if [ "$DEBUGING" != "1" ] 
 			then
