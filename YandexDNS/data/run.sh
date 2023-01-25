@@ -24,7 +24,7 @@ then
 	TOKENAPI=$(bashio::config 'token')
 	DOMAIN=$(bashio::config 'domain')
 	SUBDOMAIN=$(bashio::config 'subdomain')
-	WAIT_TIME=$(bashio::config 'seconds') + 0
+	WAIT_TIME=$(bashio::config 'seconds')
 fi
 
 if [ $DEBUGING != 1 ] 
