@@ -122,7 +122,7 @@ while true; do
 			then
 				if [ "$DEBUGING" != "1" ] 
 				then
-					bashio::log.debug "${LE_UPDATE}"
+					bashio::log.info "${LE_UPDATE}"
 				else
 					echo "${LE_UPDATE}"
 				fi
