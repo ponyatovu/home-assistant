@@ -3,7 +3,7 @@ version: 1.0.1
 slug: yandexdns
 name: Yandex DNS
 description: >-
-  Yandex DNS
+  Updating your IP in Yandex DNS
 url: https://github.com/ponyatovu/home-assistant
 advanced: true
 arch:
