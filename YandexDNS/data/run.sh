@@ -8,9 +8,9 @@ DEBUGING=0
 # Let's encrypt
 LE_UPDATE="0"
 
-TOKENAPI='6TRQZ65JXMROEY273ZAWGYUDPEZT56ZYNIYDTBJD3VHIL6SL3TYA'
-DOMAIN='shome.kz'
-SUBDOMAIN='ha01'
+TOKENAPI=''
+DOMAIN=''
+SUBDOMAIN=''
 WAIT_TIME=60
 
 SUBDOMAINID="$(curl -H "PddToken: ${TOKENAPI}" -s "https://pddimp.yandex.ru/api2/admin/dns/list?domain=${DOMAIN}1" | jq -r "select(has(\"records\")) | .records[] | select(.subdomain==\"$SUBDOMAIN\") | .record_id")";
