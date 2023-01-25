@@ -25,5 +25,5 @@ schema:
   subdomain: str
   token: str
   seconds: int
-  debug: bool
+  debug: boolean
 startup: services
