@@ -1,39 +1,9 @@
 #!/usr/bin/with-contenv bashio
 
-function try()
-{
-    [[ $- = *e* ]]; SAVED_OPT_E=$?
-    set +e
-}
-
-function throw()
-{
-    exit $1
-}
-
-function catch()
-{
-    export exception_code=$?
-    (( $SAVED_OPT_E )) && set +e
-    return $exception_code
-}
-
-# Define custom exception types
-export ERR_BAD=100
-export ERR_WORSE=101
-export ERR_CRITICAL=102
-
 ERR_LINE=0
-
 
 set -e
 
-CERT_DIR=/data/letsencrypt
-WORK_DIR=/data/workdir
-
-USE_LOGGER=0
-
-# Let's encrypt
 LE_UPDATE="0"
 
 TOKENAPI=''
@@ -51,21 +21,17 @@ TOKENAPI=$(bashio::config 'token')
 DOMAIN=$(bashio::config 'domain')
 SUBDOMAIN=$(bashio::config 'subdomain')
 WAIT_TIME=$(bashio::config 'seconds')
-VIEWPING=$(bashio::config 'debug')
-
 log_level=$(bashio::string.lower "$(bashio::config log_level)")
 
 bashio::log.level "$log_level"
 
 bashio::log.info "Starting"
-bashio::log.info  "TOKENAPI: ***"
-bashio::log.info  "DOMAIN: ${DOMAIN}"
-bashio::log.info  "SUBDOMAIN: ${SUBDOMAIN}"
-bashio::log.info  "WAIT_TIME: ${WAIT_TIME}"
-bashio::log.info  "VIEWPING: ${VIEWPING}"
-bashio::log.info  "log_level: ${log_level}"
-
-
+bashio::log.debug  "TOKENAPI: ***"
+bashio::log.debug  "DOMAIN: ${DOMAIN}"
+bashio::log.debug  "SUBDOMAIN: ${SUBDOMAIN}"
+bashio::log.debug  "WAIT_TIME: ${WAIT_TIME}"
+bashio::log.debug  "VIEWPING: ${VIEWPING}"
+bashio::log.debug  "log_level: ${log_level}"
 
 
 function GetLastMyIP() {
@@ -82,7 +48,7 @@ function GetMyIp() {
 function ChangeMyIP() {
 	RESULT_CHANGE_STATE="$(curl -H "PddToken: ${TOKENAPI}" -d "domain=${DOMAIN}&record_id=${SUBDOMAINID}&subdomain=${SUBDOMAIN}&ttl=60&content=$1" -s  "https://pddimp.yandex.ru/api2/admin/dns/edit" | jq -r ".success")";
 	
-	bashio::log.info "Change ip state: ${RESULT_CHANGE_STATE}"
+	bashio::log.warning "Change ip state: ${RESULT_CHANGE_STATE}"
 }
 
 function CheckMyIP() {
@@ -111,7 +77,7 @@ function CheckMyIP() {
 			bashio::log.info "Change ip is ok"
 		else
 			ERR_LINE=58
-			bashio::log.warning "Error update record"
+			bashio::log.error "Error update record"
 		fi
 		
 		ERR_LINE=59
@@ -146,12 +112,7 @@ while true; do
 			LE_UPDATE="$(date +%s)"
 			
 			ERR_LINE=7
-			if [ $VIEWPING != 0 ] 
-			then
-				ERR_LINE=8
-
-				bashio::log.info "${LE_UPDATE}"
-			fi
+			bashio::log.debug "ping"
 		fi
 		
 		ERR_LINE=9
@@ -159,7 +120,6 @@ while true; do
 	
 	fi
 } || {
-
 	bashio::log.error "(${ERR_LINE}) Unknown error"
 }
 sleep "5";
