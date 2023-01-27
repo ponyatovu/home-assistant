@@ -26,6 +26,8 @@ export ERR_CRITICAL=102
 ERR_LINE=0
 
 
+set -e
+
 CERT_DIR=/data/letsencrypt
 WORK_DIR=/data/workdir
 
@@ -115,8 +117,7 @@ function CheckMyIP() {
 
 # Run duckdns
 while true; do
-try
-(
+{
 	ERR_LINE=1
 	
 	if [ -z "$SUBDOMAINID" ]
@@ -153,24 +154,9 @@ try
 		sleep "$WAIT_TIME";
 	
 	fi
-)
-catch || {
-    case $exception_code in
-        $ERR_BAD)
-			bashio::log.error "(${ERR_LINE}) This error is bad"
-        ;;
-        $ERR_WORSE)
-			bashio::log.error "(${ERR_LINE}) This error is worse"
-        ;;
-        $ERR_CRITICAL)
-			bashio::log.error "(${ERR_LINE}) This error is critical"
-        ;;
-        *)
-			bashio::log.error "(${ERR_LINE}) Unknown error: $exit_code"
-			
-            # throw $exit_code    # re-throw an unhandled exception
-        ;;
-    esac
+} || {
+
+	bashio::log.error "(${ERR_LINE}) Unknown error"
 }
 sleep "5";
 done
