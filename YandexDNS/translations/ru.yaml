@@ -1,10 +1,10 @@
 ---
 configuration:
-  domains:
+  domain:
     name: Основной домен
     description: >-
       Основной домент хстинг которого осуществляться на платформе Yandex
-  subdomains:
+  subdomain:
     name: Имя домена второго уровня
   token:
     name: Токен
