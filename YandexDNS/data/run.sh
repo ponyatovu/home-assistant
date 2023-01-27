@@ -46,24 +46,21 @@ MY_IP=''
 RESULT_CHANGE_STATE=''
 
 
-if [ $USE_LOGGER != 1 ] 
-then
-	TOKENAPI=$(bashio::config 'token')
-	DOMAIN=$(bashio::config 'domain')
-	SUBDOMAIN=$(bashio::config 'subdomain')
-	WAIT_TIME=$(bashio::config 'seconds')
-	VIEWPING=$(bashio::config 'debug')
-fi
 
-if [ $USE_LOGGER != 1 ] 
-then 
-	bashio::log.debug "Starting"
-	bashio::log.info  "TOKENAPI: ${TOKENAPI}"
-	bashio::log.info  "DOMAIN: ${DOMAIN}"
-	bashio::log.info  "SUBDOMAIN: ${SUBDOMAIN}"
-	bashio::log.info  "WAIT_TIME: ${WAIT_TIME}"
-	bashio::log.info  "VIEWPING: ${VIEWPING}"
-fi
+TOKENAPI=$(bashio::config 'token')
+DOMAIN=$(bashio::config 'domain')
+SUBDOMAIN=$(bashio::config 'subdomain')
+WAIT_TIME=$(bashio::config 'seconds')
+VIEWPING=$(bashio::config 'debug')
+
+
+bashio::log.debug "Starting"
+bashio::log.info  "TOKENAPI: ${TOKENAPI}"
+bashio::log.info  "DOMAIN: ${DOMAIN}"
+bashio::log.info  "SUBDOMAIN: ${SUBDOMAIN}"
+bashio::log.info  "WAIT_TIME: ${WAIT_TIME}"
+bashio::log.info  "VIEWPING: ${VIEWPING}"
+
 
 function GetLastMyIP() {
 	LAST_MY_IP="$(curl -H "PddToken: ${TOKENAPI}" -s "https://pddimp.yandex.ru/api2/admin/dns/list?domain=${DOMAIN}" | jq -r "select(has(\"records\")) | .records[] | select(.subdomain==\"$SUBDOMAIN\") | .content")";
@@ -72,19 +69,14 @@ function GetLastMyIP() {
 function GetMyIp() {
 	MY_IP="$(curl -s "https://api.myip.com/" | jq -r ".ip")";
 	
-	if [ $USE_LOGGER != 1 ] 
-	then 
-		bashio::log.debug "Recive ip: ${MY_IP}"
-	fi
+
+	bashio::log.debug "Recive ip: ${MY_IP}"
 }
 
 function ChangeMyIP() {
 	RESULT_CHANGE_STATE="$(curl -H "PddToken: ${TOKENAPI}" -d "domain=${DOMAIN}&record_id=${SUBDOMAINID}&subdomain=${SUBDOMAIN}&ttl=60&content=$1" -s  "https://pddimp.yandex.ru/api2/admin/dns/edit" | jq -r ".success")";
 	
-	if [ $USE_LOGGER != 1 ] 
-	then 
-		bashio::log.debug "Change ip state: ${RESULT_CHANGE_STATE}"
-	fi
+	bashio::log.debug "Change ip state: ${RESULT_CHANGE_STATE}"
 }
 
 function CheckMyIP() {
@@ -98,12 +90,7 @@ function CheckMyIP() {
 	if [ "$MY_IP" != "$LAST_MY_IP" ] && [ -n "$MY_IP" ] && [ -n "$LAST_MY_IP" ];
 	then
 		ERR_LINE=53
-		if [ $USE_LOGGER != 1 ] 
-		then
-			bashio::log.info "My ip chenged: ${MY_IP}"
-		else
-			echo "My ip chenged: ${MY_IP}"
-		fi
+		bashio::log.info "My ip chenged: ${MY_IP}"
 		
 		ERR_LINE=54
 		ChangeMyIP $MY_IP
@@ -115,20 +102,10 @@ function CheckMyIP() {
 			LAST_MY_IP=$MY_IP;
 			
 			ERR_LINE=57
-			if [ $USE_LOGGER != 1 ] 
-			then
-				bashio::log.info "Change ip is ok"
-			else
-				echo 'Change ip is ok'
-			fi
+			bashio::log.info "Change ip is ok"
 		else
 			ERR_LINE=58
-			if [ $USE_LOGGER != 1 ] 
-			then
-				bashio::log.warning "Error update record"
-			else
-				echo 'Error update record'
-			fi
+			bashio::log.warning "Error update record"
 		fi
 		
 		ERR_LINE=59
@@ -147,8 +124,6 @@ try
 		ERR_LINE=2
 		
 		SUBDOMAINID="$(curl -H "PddToken: ${TOKENAPI}" -s "https://pddimp.yandex.ru/api2/admin/dns/list?domain=${DOMAIN}" | jq -r "select(has(\"records\")) | .records[] | select(.subdomain==\"$SUBDOMAIN\") | .record_id")";
-		
-		
 	else
 	
 		ERR_LINE=3
@@ -169,12 +144,8 @@ try
 			if [ $VIEWPING != 0 ] 
 			then
 				ERR_LINE=8
-				if [ $USE_LOGGER != 1 ] 
-				then
-					bashio::log.info "${LE_UPDATE}"
-				else
-					echo "${LE_UPDATE}"
-				fi
+
+				bashio::log.info "${LE_UPDATE}"
 			fi
 		fi
 		
@@ -186,39 +157,20 @@ try
 catch || {
     case $exception_code in
         $ERR_BAD)
-			if [ $USE_LOGGER != 1 ] 
-			then
-				bashio::log.error "(${ERR_LINE}) This error is bad"
-			else
-				echo "(${ERR_LINE}) This error is bad"
-			fi
+			bashio::log.error "(${ERR_LINE}) This error is bad"
         ;;
         $ERR_WORSE)
-			if [ $USE_LOGGER != 1 ] 
-			then
-				bashio::log.error "(${ERR_LINE}) This error is worse"
-			else
-				echo "(${ERR_LINE}) This error is worse"
-			fi
+			bashio::log.error "(${ERR_LINE}) This error is worse"
         ;;
         $ERR_CRITICAL)
-			if [ $USE_LOGGER != 1 ] 
-			then
-				bashio::log.error "(${ERR_LINE}) This error is critical"
-			else
-				echo "(${ERR_LINE}) This error is critical"
-			fi
+			bashio::log.error "(${ERR_LINE}) This error is critical"
         ;;
         *)
-			if [ $USE_LOGGER != 1 ] 
-			then
-				bashio::log.error "(${ERR_LINE}) Unknown error: $exit_code"
-			else
-				echo "(${ERR_LINE}) Unknown error: $exit_code"
-			fi
+			bashio::log.error "(${ERR_LINE}) Unknown error: $exit_code"
 			
             # throw $exit_code    # re-throw an unhandled exception
         ;;
     esac
 }
+sleep "5";
 done
