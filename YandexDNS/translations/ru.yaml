@@ -9,6 +9,6 @@ configuration:
   token:
     name: Токен
   seconds:
-    name: Интервал проверки IP
+    name: Интервал проверки IP 
   log_level:
     name: Уровень логирования
