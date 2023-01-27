@@ -23,8 +23,6 @@ export ERR_BAD=100
 export ERR_WORSE=101
 export ERR_CRITICAL=102
 
-declare log_level
-
 ERR_LINE=0
 
 
@@ -57,12 +55,15 @@ VIEWPING=$(bashio::config 'debug')
 
 log_level=$(bashio::string.lower "$(bashio::config log_level)")
 
+bashio::log.level log_level
+
 bashio::log.info "Starting"
 bashio::log.info  "TOKENAPI: ***"
 bashio::log.info  "DOMAIN: ${DOMAIN}"
 bashio::log.info  "SUBDOMAIN: ${SUBDOMAIN}"
 bashio::log.info  "WAIT_TIME: ${WAIT_TIME}"
 bashio::log.info  "VIEWPING: ${VIEWPING}"
+bashio::log.info  "log_level: ${log_level}"
 
 
 
