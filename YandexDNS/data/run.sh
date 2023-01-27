@@ -72,7 +72,7 @@ function GetMyIp() {
 	MY_IP="$(curl -s "https://api.myip.com/" | jq -r ".ip")";
 	
 
-	bashio::log.info "Recive ip: ${MY_IP}"
+	bashio::log.debug "Recive ip: ${MY_IP}"
 }
 
 function ChangeMyIP() {
