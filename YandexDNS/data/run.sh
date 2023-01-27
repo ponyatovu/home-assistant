@@ -149,37 +149,39 @@ try
 		SUBDOMAINID="$(curl -H "PddToken: ${TOKENAPI}" -s "https://pddimp.yandex.ru/api2/admin/dns/list?domain=${DOMAIN}" | jq -r "select(has(\"records\")) | .records[] | select(.subdomain==\"$SUBDOMAIN\") | .record_id")";
 		
 		continue
-	fi
-
-	ERR_LINE=3
-	now="$(date +%s)"
+	else
 	
-	ERR_LINE=4
-	if [ $((now - LE_UPDATE)) > "$WAIT_TIME" ]
-	then
-
-		ERR_LINE=5
+		ERR_LINE=3
+		now="$(date +%s)"
 		
-		CheckMyIP
-
-		ERR_LINE=6
-		LE_UPDATE="$(date +%s)"
-		
-		ERR_LINE=7
-		if [ $VIEWPING != 0 ] 
+		ERR_LINE=4
+		if [ $((now - LE_UPDATE)) > "$WAIT_TIME" ]
 		then
-			ERR_LINE=8
-			if [ $USE_LOGGER != 1 ] 
+
+			ERR_LINE=5
+			
+			CheckMyIP
+
+			ERR_LINE=6
+			LE_UPDATE="$(date +%s)"
+			
+			ERR_LINE=7
+			if [ $VIEWPING != 0 ] 
 			then
-				bashio::log.info "${LE_UPDATE}"
-			else
-				echo "${LE_UPDATE}"
+				ERR_LINE=8
+				if [ $USE_LOGGER != 1 ] 
+				then
+					bashio::log.info "${LE_UPDATE}"
+				else
+					echo "${LE_UPDATE}"
+				fi
 			fi
 		fi
-	fi
+		
+		ERR_LINE=9
+		sleep "$WAIT_TIME";
 	
-	ERR_LINE=9
-	sleep "$WAIT_TIME";
+	fi
 )
 catch || {
     case $exception_code in
