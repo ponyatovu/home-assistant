@@ -1,6 +1,6 @@
 #!/usr/bin/with-contenv bashio
 
-source ./trycatch.sh
+source trycatch.sh
 
 # Define custom exception types
 export ERR_BAD=100
