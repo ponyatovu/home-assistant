@@ -55,7 +55,7 @@ VIEWPING=$(bashio::config 'debug')
 
 log_level=$(bashio::string.lower "$(bashio::config log_level)")
 
-bashio::log.level log_level
+bashio::log.level "$log_level"
 
 bashio::log.info "Starting"
 bashio::log.info  "TOKENAPI: ***"
