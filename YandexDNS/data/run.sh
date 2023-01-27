@@ -47,8 +47,6 @@ LAST_MY_IP="$(curl -H "PddToken: ${TOKENAPI}" -s "https://pddimp.yandex.ru/api2/
 MY_IP=''
 RESULT_CHANGE_STATE=''
 
-
-
 TOKENAPI=$(bashio::config 'token')
 DOMAIN=$(bashio::config 'domain')
 SUBDOMAIN=$(bashio::config 'subdomain')
@@ -56,12 +54,14 @@ WAIT_TIME=$(bashio::config 'seconds')
 VIEWPING=$(bashio::config 'debug')
 
 
-bashio::log.debug "Starting"
+bashio::log.info "Starting"
 bashio::log.info  "TOKENAPI: ${TOKENAPI}"
 bashio::log.info  "DOMAIN: ${DOMAIN}"
 bashio::log.info  "SUBDOMAIN: ${SUBDOMAIN}"
 bashio::log.info  "WAIT_TIME: ${WAIT_TIME}"
 bashio::log.info  "VIEWPING: ${VIEWPING}"
+
+
 
 
 function GetLastMyIP() {
@@ -72,13 +72,13 @@ function GetMyIp() {
 	MY_IP="$(curl -s "https://api.myip.com/" | jq -r ".ip")";
 	
 
-	bashio::log.debug "Recive ip: ${MY_IP}"
+	bashio::log.info "Recive ip: ${MY_IP}"
 }
 
 function ChangeMyIP() {
 	RESULT_CHANGE_STATE="$(curl -H "PddToken: ${TOKENAPI}" -d "domain=${DOMAIN}&record_id=${SUBDOMAINID}&subdomain=${SUBDOMAIN}&ttl=60&content=$1" -s  "https://pddimp.yandex.ru/api2/admin/dns/edit" | jq -r ".success")";
 	
-	bashio::log.debug "Change ip state: ${RESULT_CHANGE_STATE}"
+	bashio::log.info "Change ip state: ${RESULT_CHANGE_STATE}"
 }
 
 function CheckMyIP() {
