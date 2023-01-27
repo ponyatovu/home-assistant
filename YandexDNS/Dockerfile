@@ -12,6 +12,7 @@ WORKDIR data
 COPY data/*.sh /
 
 RUN chmod a+x /run.sh
+RUN chmod a+x /trycatch.sh
 
 CMD [ "/run.sh" ]
 
