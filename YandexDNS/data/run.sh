@@ -111,8 +111,8 @@ while true; do
 			ERR_LINE=6
 			LE_UPDATE="$(date +%s)"
 			
-			ERR_LINE=7
-			bashio::log.debug "ping"
+			# ERR_LINE=7
+			# bashio::log.debug "ping"
 		fi
 		
 		ERR_LINE=9
